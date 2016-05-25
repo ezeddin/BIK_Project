@@ -4,33 +4,15 @@ setup() ;
 %% Part 3.1: Prepare the data
 
 % Load a database of blurred images to train from
-imdb = load('data/text_imdb.mat') ;
+imdb = load('data/text_imdb.mat');
 
-%%
-% Visualize the first image in the database
-figure(31) ; set(gcf, 'name', 'Part 3.1: Data') ; clf ;
+net = constructResNetwork2([64 64 1 1],10);
 
-subplot(1,2,1) ; imagesc(imdb.images.data(:,:,:,1)) ;
-axis off image ; title('Input (blurred)') ;
-
-subplot(1,2,2) ; imagesc(imdb.images.label(:,:,:,1)) ;
-axis off image ; title('Desired output (sharp)') ;
-
-colormap gray ;
-
-%% Part 3.2: Create a network architecture
-%
-% The expected input size (a single 64 x 64 x 1 image patch). This is
-% used for visualization purposes.
-
-net = initializeSmallCNN() ;
-%net = initializeLargeCNN() ;
-
-% Display network
 vl_simplenn_display(net);
 
 % Evaluate network on an image
 res = vl_simplenn(net, imdb.images.data(:,:,:,1)) ;
+
 
 figure(32) ; clf ; colormap gray ;
 set(gcf,'name', 'Part 3.2: network input') ;
@@ -42,6 +24,7 @@ set(gcf,'name', 'Part 3.2: network output') ;
 subplot(1,2,2) ;
 imagesc(res(end).x) ; axis image off  ;
 title('CNN output (not trained yet)') ;
+
 
 %% Part 3.3: learn the model
 

@@ -23,6 +23,17 @@ group = struct(...
             'F',convInit{1},...
             'B',convInit{2},...
             'x',0));
+     
+        
+        
+res_layer_1
+res_layer_2.pro_res = res_layer_1
+
+res_later_2.post_res = res_layer_3
+res_layer_3
+        
+% I res_layer_1 forward
+    layer.res = res;
         
 layer.group = [group,group];
 net.layers{end+1} = layer ;
