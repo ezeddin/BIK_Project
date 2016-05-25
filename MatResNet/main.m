@@ -6,7 +6,7 @@ setup() ;
 % Load a database of blurred images to train from
 imdb = load('data/text_imdb.mat');
 
-net = constructResNetwork2([64 64 1 1],10);
+net = constructResNetwork2([64 64 1 1],5);
 
 vl_simplenn_display(net);
 
@@ -45,7 +45,7 @@ trainOpts.batchSize = 16 ;
 trainOpts.learningRate = 0.0001 ;
 trainOpts.plotDiagnostics = false ;
 %trainOpts.plotDiagnostics = true ; % Uncomment to plot diagnostics
-trainOpts.numEpochs = 20 ;
+trainOpts.numEpochs = 15 ;
 trainOpts.errorFunction = 'none' ;
 
 net = cnn_train(net, imdb, @getBatch, trainOpts) ;
