@@ -15,7 +15,7 @@ net.layers{end+1} = struct(...
   'weightDecay', [1 0]) ;
 
 for i = 1:nResUnits
-    resLayers = newResUnit(i);
+    resLayers = resUnit.new(i);
     resBegin = resLayers{1};    
     resEnd = resLayers{2};
     %TODO: Check how to propperly initialize bn layer
@@ -72,39 +72,4 @@ net.layers{end+1} = struct(...
   'weightDecay', [1 0]) ;
 
 net = vl_simplenn_tidy(net) ;
-end
-
-function res_ = resBeginForward(layer,res,res_)
-    res_.x = res.x;
-    layer.resEnd.val.x = res.x;
-end
-
-function res = resBeginBackward(layer,res,res_)
-    res.dzdx = res_.dzdx + layer.resEnd.val.dzdx;
-end
-
-function res_ = resEndForward(layer,res,res_)
-    res_.x = res.x + layer.resBegin.val.x;
-end
-
-function res = resEndBackward(layer,res,res_)
-    res.dzdx = res_.dzdx;
-    layer.resBegin.val.dzdx = res_.dzdx;
-end
-
-function val = newResUnit(i)
-    p = ptr();
-    resBegin = struct(...
-        'name', sprintf('resBegin %d',i),...
-        'type', 'custom',...
-        'forward',@resBeginForward,...
-        'backward',@resBeginBackward,...
-        'resEnd',p);
-    resEnd = struct(...
-        'name', sprintf('resEnd %d',i),...
-        'type', 'custom',...
-        'forward',@resEndForward,...
-        'backward',@resEndBackward,...
-        'resBegin',p);
-    val = {resBegin, resEnd};
 end
