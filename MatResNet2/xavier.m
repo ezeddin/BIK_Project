@@ -10,7 +10,7 @@ function weights = xavier(varargin)
 % International conference on artificial intelligence and statistics. 2010.
 
 filterSize = [varargin{:}] ;
-%scale = sqrt(2/prod(filterSize(1:3))) ;
-filters = zeros(filterSize,'single');%randn(filterSize, 'single') * scale ;
+scale = sqrt(2/prod(filterSize(1:3))) ;
+filters = randn(filterSize, 'single') * scale ;
 biases = zeros(filterSize(4),1,'single') ;
 weights = {filters, biases} ;

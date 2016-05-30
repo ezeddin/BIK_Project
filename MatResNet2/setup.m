@@ -5,12 +5,15 @@ function setup(varargin)
 
 base = fileparts(mfilename('fullpath')) ;
 run(fullfile(base, 'matconvnet', 'matlab', 'vl_setupnn')) ;
+addpath(fullfile(base, 'mnist-res')) ;
+addpath(fullfile(base, 'mnist-cnn')) ;
+addpath(fullfile(base, 'cifar-res')) ;
+addpath(fullfile(base, 'matconvnet', 'examples')) ;
 
 opts.useGpu = false ;
 opts.verbose = false ;
 opts = vl_argparse(opts, varargin) ;
 
-addpath(fullfile(base, 'matconvnet', 'examples')) ;
 
 try
   vl_nnconv(single(1),single(1),[]) ;
