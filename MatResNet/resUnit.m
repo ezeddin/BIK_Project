@@ -59,7 +59,7 @@ classdef resUnit
         end
 
         function res = splitBackward(layer,res,res_)
-            res.dzdx = (res_.dzdx + layer.resEnd.val.dzdx)*.5;
+            res.dzdx = (res_.dzdx + layer.resEnd.val.dzdx);
         end
 
         function res_ = resForward(layer,res,res_)
