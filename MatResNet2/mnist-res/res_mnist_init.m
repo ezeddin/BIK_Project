@@ -10,13 +10,7 @@ rng(0) ;
 f=0.0001 ;
 net.layers = {} ;
 
-resLayers = resUnit.new(1);
-resBegin1 = resLayers{1};    
-resEnd1 = resLayers{2};
 
-resLayers = resUnit.new(2);
-resBegin2 = resLayers{1};    
-resEnd2 = resLayers{2};
 
 net.layers{end+1} = struct('type', 'conv', ...
                            'weights', {{f*randn(5,5,1,20, 'single'), zeros(1, 20, 'single')}}, ...
@@ -27,11 +21,22 @@ net.layers{end+1} = struct('type', 'pool', ...
                            'pool', [2 2], ...
                            'stride', 2, ...
                            'pad', 0) ;
-            
+
+resLayers = resUnit.new(0,20,80);
+resBegin0 = resLayers{1};    
+resEnd0 = resLayers{2};
+
+net.layers{end+1} = resBegin0;    
 net.layers{end+1} = struct('type', 'conv', ...
                            'weights', {{f*randn(5,5,20,50, 'single'),zeros(1,50,'single')}}, ...
                            'stride', 1, ...
                            'pad', 0) ;
+net.layers{end+1} = resEnd0;    
+
+resLayers = resUnit.new(1);
+resBegin1 = resLayers{1};    
+resEnd1 = resLayers{2};
+
 net.layers{end+1} = resBegin1;
 net.layers{end+1} = struct('type', 'relu') ;
 net.layers{end+1} = struct('type', 'conv', ...
@@ -49,8 +54,10 @@ net.layers{end+1} = struct('type', 'pool', ...
 net.layers{end+1} = struct('type', 'conv', ...
                            'weights', {{f*randn(4,4,50,500, 'single'),  zeros(1,500,'single')}}, ...
                            'stride', 1, ...
-                           'pad', 0) ;
-                       
+                           'pad', 0) ;resLayers = resUnit.new(2);
+resBegin2 = resLayers{1};    
+resEnd2 = resLayers{2};
+
 net.layers{end+1} = resBegin2;
 net.layers{end+1} = struct('type', 'relu') ;
 net.layers{end+1} = struct('type', 'conv', ...
@@ -66,10 +73,10 @@ net.layers{end+1} = struct('type', 'conv', ...
 net.layers{end+1} = struct('type', 'softmaxloss') ;
 
 % % optionally switch to batch normalization
-if opts.batchNormalization
-  net = insertBnorm(net, 6) ;
-  net = insertBnorm(net, 13) ;
-end
+% if opts.batchNormalization
+%   net = insertBnorm(net, 6) ;
+%   net = insertBnorm(net, 13) ;
+% end
 
 % Meta parameters
 net.meta.inputSize = [27 27 1] ;
