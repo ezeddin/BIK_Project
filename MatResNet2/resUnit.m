@@ -1,6 +1,8 @@
 classdef resUnit
     methods(Static)
-        function val = new(i)
+        function val = new(i,inputDim,outputDim)
+            %
+            %
             p = ptr();
             split = struct(...
                 'name', sprintf('resBegin %d',i),...
@@ -14,6 +16,11 @@ classdef resUnit
                 'forward',@resUnit.resForward,...
                 'backward',@resUnit.resBackward,...
                 'resBegin',p);
+            if nargin >= 3
+                W = xavier(1,1,inputDim,outputDim);
+                split.F = W{1};
+                split.B = W{2};
+            end
             val = {split, res};
         end
         function testGradient()
@@ -34,7 +41,8 @@ classdef resUnit
             set(gcf, 'name', 'Part 2.3: custom loss layer') ;
             func = @(x) proj(p, forward(x, x0)) ;
             checkDerivativeNumerically(func, x, dx);
-        end   
+        end
+        
         function testNet = getTestNetwork(inputSizes)
             if nargin <= 0
                 inputSizes = [10 10 1 2];
@@ -53,12 +61,23 @@ classdef resUnit
     end
     methods(Access = private, Static)
         function res_ = splitForward(layer,res,res_)
+            if isfield(layer,'F')
+            	layer.resEnd.val.x = vl_nnconv(res.x,layer.F,layer.B);
+            else
+                layer.resEnd.val.x = res.x;
+            end
             res_.x = res.x;
-            layer.resEnd.val.x = res.x;
         end
 
         function res = splitBackward(layer,res,res_)
-            res.dzdx = (res_.dzdx + layer.resEnd.val.dzdx);
+            if isfield(layer,'F')
+                [dzdxp,dzdF,dzdB] = vl_nnconv(res_.x,layer.F,layer.B,layer.resEnd.val.dzdx);
+                layer.F = layer.F - dzdF .* layer.learningrate(1);
+                layer.B = layer.B - dzdB .* layer.learningrate(2);
+            else
+                dzdxp = layer.resEnd.val.dzdx;
+            end            
+            res.dzdx = (res_.dzdx + dzdxp);
         end
 
         function res_ = resForward(layer,res,res_)
