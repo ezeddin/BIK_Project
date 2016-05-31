@@ -1,25 +1,29 @@
 classdef resUnit
     methods(Static)
-        function val = new(i,inputDim,outputDim)
+        function val = new(name,inputChannels,outputChannels, stride)
             %
             %
             p = ptr();
             split = struct(...
-                'name', sprintf('resBegin %d',i),...
+                'name', sprintf('resBegin %s',name),...
                 'type', 'custom',...
                 'forward',@resUnit.splitForward,...
                 'backward',@resUnit.splitBackward,...
+                'learningrate', [.1 0.1],...
                 'resEnd',p);
             res = struct(...
-                'name', sprintf('resEnd %d',i),...
+                'name', sprintf('resEnd %s',name),...
                 'type', 'custom',...
                 'forward',@resUnit.resForward,...
                 'backward',@resUnit.resBackward,...
+                'learningrate', [.1 0.1],...
                 'resBegin',p);
             if nargin >= 3
-                W = xavier(1,1,inputDim,outputDim);
+
+                W = xavier(1,1,inputChannels,outputChannels);
                 split.F = W{1};
                 split.B = W{2};
+                split.stride = stride;
             end
             val = {split, res};
         end
@@ -62,7 +66,7 @@ classdef resUnit
     methods(Access = private, Static)
         function res_ = splitForward(layer,res,res_)
             if isfield(layer,'F')
-            	layer.resEnd.val.x = vl_nnconv(res.x,layer.F,layer.B);
+            	layer.resEnd.val.x = vl_nnconv(res.x,layer.F,layer.B, 'stride', layer.stride);
             else
                 layer.resEnd.val.x = res.x;
             end
@@ -71,7 +75,7 @@ classdef resUnit
 
         function res = splitBackward(layer,res,res_)
             if isfield(layer,'F')
-                [dzdxp,dzdF,dzdB] = vl_nnconv(res_.x,layer.F,layer.B,layer.resEnd.val.dzdx);
+                [dzdxp,dzdF,dzdB] = vl_nnconv(res_.x,layer.F,layer.B,layer.resEnd.val.dzdx, 'stride', layer.stride);
                 layer.F = layer.F - dzdF .* layer.learningrate(1);
                 layer.B = layer.B - dzdB .* layer.learningrate(2);
             else
