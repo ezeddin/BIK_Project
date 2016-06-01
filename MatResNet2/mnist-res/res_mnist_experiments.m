@@ -2,7 +2,7 @@ setup() ;
 
 %% Experiment with the res_mnist_fc_bnorm
 [net_bn, info_bn] = res_mnist(...
-  'expDir', 'data/res-mnist-bnorm', 'batchNormalization', true);
+  'name', '18-layers', 'networkType', 'Plain');
 
 
 figure(1) ; clf ;
