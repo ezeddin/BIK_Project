@@ -8,14 +8,14 @@ rng(0) ;
 
 net.layers = {} ;
 
-net = addResGroup(net,'16',[28,28,1],[14,14,16],3,opts);
-net = addResGroup(net,'32',[14,14,16],[7,7,32],3,opts);
-net = addResGroup(net,'64',[7,7,32],[4,4,64],3,opts);
+net = addResGroup(net,'32',[28,28,1],[14,14,32],12,opts);
+net = addResGroup(net,'64',[14,14,32],[7,7,64],12,opts);
+net = addResGroup(net,'128',[7,7,64],[4,4,128],12,opts);
 
 net.layers{end+1} = struct( ...
                     'name',  'fc',...
                     'type', 'conv',...
-                    'weights', {xavier(4,4,64,10)},...
+                    'weights', {xavier(4,4,128,10)},...
                     'pad', 0);
 
 net.layers{end+1} = struct('type', 'softmaxloss') ;
@@ -23,7 +23,7 @@ net.layers{end+1} = struct('type', 'softmaxloss') ;
 % Meta parameters
 net.meta.inputSize = [27 27 1] ;
 net.meta.trainOpts.learningRate = 0.001 ;
-net.meta.trainOpts.numEpochs = 25 ;
+net.meta.trainOpts.numEpochs = 30 ;
 net.meta.trainOpts.batchSize = 100 ;
 
 % Fill in defaul values

@@ -2,7 +2,7 @@ setup() ;
 
 %% Experiment with the res_mnist_fc_bnorm
 [net_bn, info_bn] = res_mnist(...
-  'name', '18-layers', 'networkType', 'Plain');
+  'name', '72-layers', 'networkType', 'ResNet', 'gpu', true);
 
 
 figure(1) ; clf ;
