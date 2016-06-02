@@ -1,14 +1,18 @@
 function [net, info] = res_mnist(varargin)
-% RES_MNIST  Demonstrated MatConNet on MNIST
+% CNN_MNIST  Demonstrated MatConNet on MNIST
 
 run(fullfile(fileparts(mfilename('fullpath')),'..','matconvnet','matlab', 'vl_setupnn.m')) ;
-opts.networkType = 'ResNet';
-opts.name = '18 layers';
+
+opts.networkType = 'simplenn' ; %resnet
+opts.architecture = 'resnet'; %plain
+opts.name = '';
 [opts, varargin] = vl_argparse(opts, varargin) ;
-opts.expDir = fullfile('data', ['mnist-' opts.networkType '-' opts.name]) ;
+
+opts.expDir = fullfile('data', ['mnist-' opts.networkType '-' opts.architecture '-' opts.name]) ;
+[opts, varargin] = vl_argparse(opts, varargin) ;
 
 opts.dataDir = fullfile(vl_rootnn, 'data', 'mnist') ;
-opts.imdbPath = fullfile(opts.expDir, 'imdb.mat');
+opts.imdbPath = fullfile(opts.expDir, 'imdb.mat') ;
 opts.train = struct() ;
 opts = vl_argparse(opts, varargin) ;
 if ~isfield(opts.train, 'gpus'), opts.train.gpus = []; end;
@@ -16,8 +20,12 @@ if ~isfield(opts.train, 'gpus'), opts.train.gpus = []; end;
 % --------------------------------------------------------------------
 %                                                         Prepare data
 % --------------------------------------------------------------------
-
-net = res_mnist_init('networkType', opts.networkType) ;
+switch lower(opts.networkType)
+    case 'dagnn'
+        net = res_mnist_init_dagnn('architecture',opts.architecture);
+    case 'simplenn'
+        net = res_mnist_init('architecture',opts.architecture) ;
+end
 
 if exist(opts.imdbPath, 'file')
   imdb = load(opts.imdbPath) ;
@@ -33,39 +41,43 @@ net.meta.classes.name = arrayfun(@(x)sprintf('%d',x),1:10,'UniformOutput',false)
 %                                                                Train
 % --------------------------------------------------------------------
 
+switch opts.networkType
+  case 'simplenn', trainfn = @cnn_train ;
+  case 'dagnn', trainfn = @cnn_train_dag ;
+end
 
-[net, info] = cnn_train(net, imdb, @getBatch, ...
+[net, info] = trainfn(net, imdb, getBatch(opts), ...
   'expDir', opts.expDir, ...
   net.meta.trainOpts, ...
   opts.train, ...
   'val', find(imdb.images.set == 3)) ;
 
 % --------------------------------------------------------------------
-% function fn = getBatch(opts)
-% % --------------------------------------------------------------------
-% switch lower(opts.networkType)
-%   case 'simplenn'
-%     fn = @(x,y) getSimpleNNBatch(x,y) ;
-%   case 'dagnn'
-%     bopts = struct('numGpus', numel(opts.train.gpus)) ;
-%     fn = @(x,y) getDagNNBatch(bopts,x,y) ;
- end
+function fn = getBatch(opts)
+% --------------------------------------------------------------------
+switch lower(opts.networkType)
+  case 'simplenn'
+    fn = @(x,y) getSimpleNNBatch(x,y) ;
+  case 'dagnn'
+    bopts = struct('numGpus', numel(opts.train.gpus)) ;
+    fn = @(x,y) getDagNNBatch(bopts,x,y) ;
+end
 
 % --------------------------------------------------------------------
-function [images, labels] = getBatch(imdb, batch)
+function [images, labels] = getSimpleNNBatch(imdb, batch)
 % --------------------------------------------------------------------
-    images = imdb.images.data(:,:,:,batch) ;
-    labels = imdb.images.labels(1,batch) ;
+images = imdb.images.data(:,:,:,batch) ;
+labels = imdb.images.labels(1,batch) ;
+
+% --------------------------------------------------------------------
+function inputs = getDagNNBatch(opts, imdb, batch)
+% --------------------------------------------------------------------
+images = imdb.images.data(:,:,:,batch) ;
+labels = imdb.images.labels(1,batch) ;
+if opts.numGpus > 0
+  images = gpuArray(images) ;
 end
-% % --------------------------------------------------------------------
-% function inputs = getDagNNBatch(opts, imdb, batch)
-% % --------------------------------------------------------------------
-% images = imdb.images.data(:,:,:,batch) ;
-% labels = imdb.images.labels(1,batch) ;
-% if opts.numGpus > 0
-%   images = gpuArray(images) ;
-% end
-% inputs = {'input', images, 'label', labels} ;
+inputs = {'input', images, 'label', labels} ;
 
 % --------------------------------------------------------------------
 function imdb = getMnistImdb(opts)
@@ -119,4 +131,3 @@ imdb.images.labels = cat(2, y1, y2) ;
 imdb.images.set = set ;
 imdb.meta.sets = {'train', 'val', 'test'} ;
 imdb.meta.classes = arrayfun(@(x)sprintf('%d',x),0:9,'uniformoutput',false) ;
-end

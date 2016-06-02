@@ -1,6 +1,6 @@
 function net = res_mnist_init(varargin)
 % RES_MNIST_LENET Initialize a CNN similar for MNIST
-opts.networkType = 'ResNet' ;
+opts.architecture = 'ResNet' ;
 opts = vl_argparse(opts, varargin) ;
 
 rng('default');
@@ -29,7 +29,7 @@ net.meta.trainOpts.batchSize = 100 ;
 % Fill in defaul values
 net = vl_simplenn_tidy(net) ;
 
-switch lower(opts.networkType)
+switch lower(opts.architecture)
   case 'resnet'
   case 'plain'
   otherwise
@@ -45,7 +45,7 @@ function net = addResGroup(net, name, inputDims, outputDims, n,opts)
     inputChannels = inputDims(3);
     outputChannels = outputDims(3);
     
-    if strcmpi(opts.networkType,'resnet')
+    if strcmpi(opts.architecture,'resnet')
         resLayers = resUnit.new(resUnitName,inputChannels,outputChannels,stride);
         net.layers{end+1} = resLayers{1};
     end
@@ -72,7 +72,7 @@ function net = addResGroup(net, name, inputDims, outputDims, n,opts)
                 'weights', {xavier(3,3,outputChannels,outputChannels)},...
                 'pad', 1);
     
-    if strcmpi(opts.networkType,'resnet')
+    if strcmpi(opts.architecture,'resnet')
         net.layers{end+1} = resLayers{2};
     end
     % ----------------------------------------------
@@ -80,7 +80,7 @@ function net = addResGroup(net, name, inputDims, outputDims, n,opts)
     for i = 2:n
         resUnitName = sprintf('%s,%d', name,i);
         
-        if strcmpi(opts.networkType,'resnet')
+        if strcmpi(opts.architecture,'resnet')
             resLayers = resUnit.new(resUnitName);
             net.layers{end+1} = resLayers{1};
         end
@@ -105,7 +105,7 @@ function net = addResGroup(net, name, inputDims, outputDims, n,opts)
                     'learningrate', [1 1 0.1],...
                     'weights', {xavier(3,3,outputChannels,outputChannels)},...
                     'pad', 1);
-        if strcmpi(opts.networkType,'resnet')
+        if strcmpi(opts.architecture,'resnet')
             net.layers{end+1} = resLayers{2};
         end
     end
