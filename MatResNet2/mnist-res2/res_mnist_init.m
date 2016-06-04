@@ -14,8 +14,6 @@ net = addResGroup(net,'16',[28,28,1],[14,14,16],3);
 
 end
 
-
-
 function net = addResGroup(net, groupIndex, inputDims, outputDims, n,inputName,outputName)
     stride = 2;
     inputChannels = inputDims(3);

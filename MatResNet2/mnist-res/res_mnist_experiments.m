@@ -5,8 +5,6 @@ setup() ;
   'name', 'test',...
   'networkType', 'simplenn',...
   'architecture', 'resnet');
-
-
 figure(1) ; clf ;
 subplot(1,2,1) ;
 semilogy(info_bn.val.objective', '+--') ;
